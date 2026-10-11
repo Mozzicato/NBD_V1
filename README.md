@@ -64,9 +64,10 @@ Also: PWA manifest, privacy/terms drafts, and an analytics event stream (`Event`
 | `COMMISSION_BPS` | Commission in basis points (1000 = 10%) |
 | `AUTO_RELEASE_HOURS` | Auto-release window after "Submitted" (default 72) |
 | `SCHOOL_EMAIL_DOMAINS` | Comma-separated allow-list for instant verification |
-| `PAYSTACK_SECRET_KEY` | Required in production; enables Paystack (test keys work) |
+| `DEMO_MODE` | Set to `true` only for fake-money demos; forces mock checkout |
+| `PAYSTACK_SECRET_KEY` | Required in production unless `DEMO_MODE=true`; enables Paystack (test keys work) |
 | `CRON_SECRET` | Bearer token for `POST /api/cron/auto-release` (schedule every ~15 min) |
-| `RESEND_API_KEY`, `EMAIL_FROM` | Optional real email delivery |
+| `BREVO_API_KEY`, `EMAIL_FROM` | Brevo API key and verified sender used for email delivery |
 | `BLOB_READ_WRITE_TOKEN` | Required in production for private ID/evidence storage and avatars |
 
 Paystack webhook URL: `https://<your-domain>/api/webhooks/paystack`.
@@ -74,7 +75,7 @@ Paystack webhook URL: `https://<your-domain>/api/webhooks/paystack`.
 ## Vercel deployment
 
 1. Create a private Vercel Blob store and copy its `BLOB_READ_WRITE_TOKEN` into Vercel.
-2. Add all production values from `.env.example`, including Neon `DATABASE_URL` (pooled) and `DIRECT_DATABASE_URL` (direct), `APP_URL`, `CRON_SECRET`, Paystack key, Resend key and Blob token.
+2. Add all production values from `.env.example`, including Neon `DATABASE_URL` (pooled) and `DIRECT_DATABASE_URL` (direct), `APP_URL`, `CRON_SECRET`, Paystack key, Brevo key and Blob token.
 3. Set the Vercel build command to `npm run vercel-build`. It applies committed Prisma migrations before the application build.
 4. Configure the Paystack webhook URL above. The daily cron in `vercel.json` invokes overdue escrow release with Vercel's `CRON_SECRET` authorization.
 

@@ -14,8 +14,8 @@ export interface PaymentProvider {
 }
 
 export function getPaymentProvider(): PaymentProvider {
-  if (config.isProd && !config.paystackSecretKey) {
+  if (config.isProd && !config.demoMode && !config.paystackSecretKey) {
     throw new Error("PAYSTACK_SECRET_KEY is required in production.");
   }
-  return config.paystackSecretKey ? paystackProvider : mockProvider;
+  return config.demoMode || !config.paystackSecretKey ? mockProvider : paystackProvider;
 }

@@ -7,8 +7,9 @@ export const config = {
     .map((d) => d.trim().toLowerCase())
     .filter(Boolean),
   paystackSecretKey: process.env.PAYSTACK_SECRET_KEY ?? "",
+  demoMode: process.env.DEMO_MODE === "true",
   cronSecret: process.env.CRON_SECRET ?? "",
-  resendApiKey: process.env.RESEND_API_KEY ?? "",
+  brevoApiKey: process.env.BREVO_API_KEY ?? "",
   emailFrom: process.env.EMAIL_FROM ?? "No Broke Dayz <hello@nobrokedayz.com>",
   blobReadWriteToken: process.env.BLOB_READ_WRITE_TOKEN ?? "",
   isProd: process.env.NODE_ENV === "production",
