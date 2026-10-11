@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+/* No Broke Dayz design tokens — "trust purple + transaction green", vibrant & block-based. */
+:root {
+  --primary: #7c3aed;
+  --primary-strong: #6d28d9;
+  --on-primary: #ffffff;
+  --primary-soft: #ede9fe;
+  --accent: #16a34a;
+  --accent-strong: #15803d;
+  --on-accent: #052e16;
+  --accent-soft: #dcfce7;
+  --background: #faf5ff;
+  --foreground: #1e1b4b;
+  --card: #ffffff;
+  --muted: #eceef9;
+  --muted-foreground: #475569;
+  --border: #ddd6fe;
+  --warning: #b45309;
+  --warning-soft: #fef3c7;
+  --destructive: #dc2626;
+  --destructive-soft: #fee2e2;
+  --ring: #7c3aed;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: #a78bfa;
+    --primary-strong: #c4b5fd;
+    --on-primary: #1e1b4b;
+    --primary-soft: #2e1065;
+    --accent: #4ade80;
+    --accent-strong: #86efac;
+    --on-accent: #052e16;
+    --accent-soft: #052e16;
+    --background: #0f0a1f;
+    --foreground: #ede9fe;
+    --card: #1a1330;
+    --muted: #241b3d;
+    --muted-foreground: #b4b0c8;
+    --border: #3b2f63;
+    --warning: #fbbf24;
+    --warning-soft: #3b2a05;
+    --destructive: #f87171;
+    --destructive-soft: #3f0d0d;
+    --ring: #c4b5fd;
+  }
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-primary-strong: var(--primary-strong);
+  --color-on-primary: var(--on-primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-on-accent: var(--on-accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-destructive: var(--destructive);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-inter);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* In the components layer so Tailwind utilities (e.g. pl-10) can override it. */
+@layer components {
+  .field {
+    width: 100%;
+    min-height: 44px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: var(--card);
+    padding: 10px 14px;
+    font-size: 16px; /* prevents iOS zoom on focus */
+    color: var(--foreground);
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 25%, transparent);
+  }
+  .field[aria-invalid="true"] {
+    border-color: var(--destructive);
+  }
+}

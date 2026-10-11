@@ -1,0 +1,284 @@
+// No Broke Dayz — data model (PRD §8).
+// All money is stored as integer kobo (₦1 = 100 kobo).
+// String "enums" are used so allowed values are typed in src/lib/types.ts.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                 String    @id @default(cuid())
+  name               String
+  email              String    @unique
+  passwordHash       String?
+  schoolEmail        String?   @unique
+  phone              String?
+  phoneVerifiedAt    DateTime?
+  campus             String    @default("UNILAG")
+  faculty            String?
+  photoUrl           String?
+  bio                String?
+  skills             String    @default("") // comma-separated tags
+  availability       String?
+  isAdmin            Boolean   @default(false)
+  verificationStatus String    @default("unverified") // unverified | pending | verified | rejected
+  ratingAvg          Float     @default(0)
+  ratingCount        Int       @default(0)
+  jobsCompleted      Int       @default(0)
+  bankName           String?
+  bankAccountNumber  String?
+  bankAccountName    String?
+  consentAt          DateTime
+  createdAt          DateTime  @default(now())
+
+  sessions       Session[]
+  otps           OtpCode[]
+  verifications  VerificationRequest[] @relation("VerificationUser")
+  reviewedVerifs VerificationRequest[] @relation("VerificationReviewer")
+  jobsPosted     Job[]
+  applications   Application[]
+  walletEntries  WalletEntry[]
+  withdrawals    Withdrawal[]
+  reviewsGiven   Review[]              @relation("Rater")
+  reviewsGot     Review[]              @relation("Ratee")
+  disputesOpened Dispute[]             @relation("DisputeOpener")
+  disputesSolved Dispute[]             @relation("DisputeResolver")
+  notifications  Notification[]
+  messages       Message[]
+  payments       Payment[]
+}
+
+model Session {
+  id        String   @id // sha256 of the cookie token
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model OtpCode {
+  id         String    @id @default(cuid())
+  userId     String?
+  user       User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose    String // school_email | phone | withdrawal | magic_link
+  target     String // email or phone the code was sent to
+  codeHash   String
+  attempts   Int       @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([target, purpose])
+}
+
+model VerificationRequest {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation("VerificationUser", fields: [userId], references: [id], onDelete: Cascade)
+  method       String // school_email | id_card
+  evidenceRef  String? // private storage key for ID images; deleted after review
+  schoolEmail  String?
+  status       String    @default("pending") // pending | approved | rejected
+  note         String?
+  reviewedById String?
+  reviewedBy   User?     @relation("VerificationReviewer", fields: [reviewedById], references: [id])
+  reviewedAt   DateTime?
+  createdAt    DateTime  @default(now())
+}
+
+model Job {
+  id             String    @id @default(cuid())
+  posterId       String
+  poster         User      @relation(fields: [posterId], references: [id])
+  title          String
+  description    String
+  category       String
+  locationType   String // on_campus | remote | specific
+  locationDetail String?
+  amount         Int // worker payout per slot, kobo
+  commission     Int // platform commission on the full job, kobo
+  slots          Int       @default(1)
+  neededBy       DateTime?
+  campus         String    @default("UNILAG")
+  // awaiting_payment | open | assigned | in_progress | submitted | completed | cancelled | disputed
+  status         String    @default("awaiting_payment")
+  fundedAt       DateTime?
+  startedAt      DateTime?
+  submittedAt    DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  applications Application[]
+  escrow       EscrowTransaction?
+  payments     Payment[]
+  reviews      Review[]
+  disputes     Dispute[]
+  messages     Message[]
+
+  @@index([status, campus, createdAt])
+}
+
+model Application {
+  id        String   @id @default(cuid())
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  workerId  String
+  worker    User     @relation(fields: [workerId], references: [id])
+  note      String?
+  status    String   @default("applied") // applied | accepted | rejected | withdrawn
+  createdAt DateTime @default(now())
+
+  @@unique([jobId, workerId])
+}
+
+// One funding attempt with the payment provider.
+model Payment {
+  id        String   @id @default(cuid())
+  reference String   @unique
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  amount    Int // total charged, kobo
+  provider  String // mock | paystack
+  status    String   @default("pending") // pending | success | failed
+  mockOutcome String? // only used by the mock provider
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Escrow is the source of truth for funds held against a job. One per job (enforces idempotent funding).
+model EscrowTransaction {
+  id                 String    @id @default(cuid())
+  jobId              String    @unique
+  job                Job       @relation(fields: [jobId], references: [id])
+  amount             Int // worker pool held (amount * slots)
+  commission         Int // commission held
+  state              String    @default("funded") // funded | released | refunded | split
+  providerRef        String
+  workerReleased     Int       @default(0)
+  commissionCaptured Int       @default(0)
+  posterRefunded     Int       @default(0)
+  createdAt          DateTime  @default(now())
+  releasedAt         DateTime?
+}
+
+// Ledger. userId null = platform account (commission).
+model WalletEntry {
+  id           String   @id @default(cuid())
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id])
+  // funding (card payment into escrow, no balance change) | payout | refund | withdrawal | withdrawal_reversal | commission
+  type         String
+  amount       Int // signed kobo change to balance (0 for funding records, which carry `gross`)
+  gross        Int      @default(0) // display amount for non-balance entries
+  balanceAfter Int
+  ref          String?
+  jobId        String?
+  description  String
+  createdAt    DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Withdrawal {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+  amount            Int
+  bankName          String
+  bankAccountNumber String
+  bankAccountName   String
+  status            String    @default("pending") // pending | paid | failed
+  reference         String    @unique
+  note              String?
+  createdAt         DateTime  @default(now())
+  processedAt       DateTime?
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id])
+  raterId   String
+  rater     User     @relation("Rater", fields: [raterId], references: [id])
+  rateeId   String
+  ratee     User     @relation("Ratee", fields: [rateeId], references: [id])
+  score     Int
+  comment   String?
+  reported  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@unique([jobId, raterId, rateeId])
+}
+
+model Dispute {
+  id             String    @id @default(cuid())
+  jobId          String
+  job            Job       @relation(fields: [jobId], references: [id])
+  openedById     String
+  openedBy       User      @relation("DisputeOpener", fields: [openedById], references: [id])
+  reason         String
+  evidenceText   String?
+  evidenceRef    String?
+  prevJobStatus  String
+  status         String    @default("open") // open | resolved
+  resolution     String? // release | refund | split
+  workerSharePct Int?
+  note           String?
+  resolvedById   String?
+  resolvedBy     User?     @relation("DisputeResolver", fields: [resolvedById], references: [id])
+  resolvedAt     DateTime?
+  createdAt      DateTime  @default(now())
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id])
+  body      String
+  createdAt DateTime @default(now())
+}
+
+// Outbound email/SMS log. In dev this is the only delivery channel (see /dev/outbox).
+model OutboxMessage {
+  id        String   @id @default(cuid())
+  channel   String // email | sms
+  to        String
+  subject   String
+  body      String
+  createdAt DateTime @default(now())
+}
+
+// Product analytics event stream (PRD §11).
+model Event {
+  id        String   @id @default(cuid())
+  name      String
+  userId    String?
+  props     String   @default("{}")
+  createdAt DateTime @default(now())
+
+  @@index([name, createdAt])
+}
