@@ -21,7 +21,7 @@ async function choose(form: FormData) {
 
 /** Stand-in for the gateway's hosted checkout. Only reachable when no real provider is configured. */
 export default async function MockCheckout({ params }: PageProps<"/pay/mock/[reference]">) {
-  if (config.paystackSecretKey) notFound();
+  if (config.paystackSecretKey && !config.demoMode) notFound();
   const { reference } = await params;
   const user = await requireUser();
   const payment = await db.payment.findUnique({ where: { reference }, include: { job: true } });
