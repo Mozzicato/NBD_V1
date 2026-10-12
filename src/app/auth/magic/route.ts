@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { consumeMagicToken } from "@/lib/otp";
 import { createSession, safeNext } from "@/lib/auth";
 import { track } from "@/lib/notify";
+import { grantDemoStartingBalance } from "@/lib/demo-wallet";
 
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get("token") ?? "";
@@ -15,6 +16,7 @@ export async function GET(req: NextRequest) {
     user = await db.user.create({
       data: { email: otp.target, name: otp.target.split("@")[0], consentAt: new Date() },
     });
+    await grantDemoStartingBalance(user.id);
     await track("signup", user.id, { method: "magic_link" });
   }
   await createSession(user.id);

@@ -8,6 +8,7 @@ import { createSession, destroySession, hashPassword, randomToken, safeNext, ver
 import { issueOtp } from "@/lib/otp";
 import { sendEmail } from "@/lib/outbox";
 import { track } from "@/lib/notify";
+import { grantDemoStartingBalance } from "@/lib/demo-wallet";
 import { fail, str, type ActionState } from "@/lib/action-state";
 
 const signupSchema = z.object({
@@ -27,6 +28,7 @@ export async function signup(_: ActionState, form: FormData): Promise<ActionStat
   const user = await db.user.create({
     data: { name, email, passwordHash: await hashPassword(password), consentAt: new Date() },
   });
+  await grantDemoStartingBalance(user.id);
   await track("signup", user.id, { method: "password" });
   await createSession(user.id);
   redirect("/verify");
@@ -57,7 +59,8 @@ export async function sendMagicLink(_: ActionState, form: FormData): Promise<Act
   await issueOtp({ purpose: "magic_link", target: email, code: token, minutes: 20, userId: existing?.id });
   const next = safeNext(form.get("next"));
   const link = `${config.appUrl}/auth/magic?token=${token}&next=${encodeURIComponent(next)}${existing ? "" : "&new=1"}`;
-  await sendEmail(email, "Your No Broke Dayz login link", `Tap to log in (expires in 20 minutes):\n\n${link}\n\nIf you didn't ask for this, ignore this email.`);
+  const sent = await sendEmail(email, "Your No Broke Dayz login link", `Tap to log in (expires in 20 minutes):\n\n${link}\n\nIf you didn't ask for this, ignore this email.`);
+  if (!sent.ok) return fail(sent.error);
   return { ok: `Check ${email} for your login link. It expires in 20 minutes.` };
 }
 

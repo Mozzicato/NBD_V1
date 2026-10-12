@@ -29,7 +29,10 @@ export async function sendSchoolCode(_: ActionState, form: FormData): Promise<Ac
   if (taken) return fail("This school email is already linked to another account.");
 
   const code = await issueOtp({ userId: user.id, purpose: "school_email", target: email });
-  await sendEmail(email, "Your No Broke Dayz verification code", `Your verification code is ${code}. It expires in 10 minutes.`);
+  const sent = await sendEmail(email, "Your No Broke Dayz verification code", `Your verification code is ${code}. It expires in 10 minutes.`);
+  if (!sent.ok) {
+    return fail(`${sent.error} You can still verify by uploading your student ID below.`);
+  }
   await track("verification_started", user.id, { method: "school_email" });
   redirect(`/verify?email=${encodeURIComponent(email)}`);
 }

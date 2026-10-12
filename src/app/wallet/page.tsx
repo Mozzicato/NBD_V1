@@ -17,6 +17,8 @@ const ENTRY_LABEL: Record<string, string> = {
   refund: "Refund",
   withdrawal: "Withdrawal",
   withdrawal_reversal: "Withdrawal reversed",
+  topup: "Demo top-up",
+  demo_credit: "Demo starting balance",
 };
 
 export default async function WalletPage() {

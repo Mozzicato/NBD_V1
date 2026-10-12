@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
+import { config } from "@/lib/config";
 import { randomToken, requireUser } from "@/lib/auth";
 import { EscrowError, postEntry } from "@/lib/escrow";
 import { formatNaira, nairaToKobo } from "@/lib/money";
@@ -64,6 +65,7 @@ export async function sendWithdrawalCode(): Promise<ActionState> {
 
 export async function requestWithdrawal(_: ActionState, form: FormData): Promise<ActionState> {
   const user = await requireUser("/wallet");
+  if (config.demoMode) return fail("Withdrawals are disabled for demo funds.");
   if (!user.phone || !user.phoneVerifiedAt) return fail("Verify your phone number first.");
   if (!user.bankName || !user.bankAccountNumber || !user.bankAccountName) return fail("Add your bank details first.");
   const naira = Number(str(form, "amount").replace(/[,₦\s]/g, ""));

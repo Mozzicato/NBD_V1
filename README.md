@@ -64,7 +64,7 @@ Also: PWA manifest, privacy/terms drafts, and an analytics event stream (`Event`
 | `COMMISSION_BPS` | Commission in basis points (1000 = 10%) |
 | `AUTO_RELEASE_HOURS` | Auto-release window after "Submitted" (default 72) |
 | `SCHOOL_EMAIL_DOMAINS` | Comma-separated allow-list for instant verification |
-| `DEMO_MODE` | Set to `true` only for fake-money demos; forces mock checkout |
+| `DEMO_MODE` | Set to `true` only for fake-money demos; forces mock checkout, gives each new account ₦100,000 in demo funds, and disables withdrawals |
 | `PAYSTACK_SECRET_KEY` | Required in production unless `DEMO_MODE=true`; enables Paystack (test keys work) |
 | `CRON_SECRET` | Bearer token for `POST /api/cron/auto-release` (schedule every ~15 min) |
 | `BREVO_API_KEY`, `EMAIL_FROM` | Brevo API key and verified sender used for email delivery |

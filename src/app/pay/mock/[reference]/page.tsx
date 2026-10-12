@@ -19,8 +19,10 @@ async function choose(form: FormData) {
   redirect(await finishFunding(reference));
 }
 
-/** Stand-in for the gateway's hosted checkout. Only reachable when no real provider is configured. */
+/** Stand-in for the gateway's hosted checkout. Only reachable when the mock provider is the active one. */
 export default async function MockCheckout({ params }: PageProps<"/pay/mock/[reference]">) {
+  // Must mirror getPaymentProvider(): the mock provider is active in demo mode even when a
+  // Paystack key is configured, so gating on the key alone 404s a checkout we just redirected to.
   if (config.paystackSecretKey && !config.demoMode) notFound();
   const { reference } = await params;
   const user = await requireUser();
