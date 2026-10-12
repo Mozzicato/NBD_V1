@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { Bell } from "lucide-react";
+import { Bell, LogOut } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Avatar, btn } from "./ui";
 import { NavLinks, MobileTabs } from "./nav-links";
 import { Logo } from "./logo";
+import { logout } from "@/app/actions/auth";
 
 export async function SiteHeader() {
   const user = await getCurrentUser();
@@ -35,6 +36,12 @@ export async function SiteHeader() {
               <Link href="/profile" className="hidden rounded-full md:inline-flex" aria-label="Your profile">
                 <Avatar name={user.name} url={user.photoUrl} size={36} />
               </Link>
+              <form action={logout}>
+                <button type="submit" className={btn("ghost", "whitespace-nowrap px-3 text-sm")}>
+                  <LogOut size={17} aria-hidden />
+                  <span>Sign out</span>
+                </button>
+              </form>
             </>
           ) : (
             <>

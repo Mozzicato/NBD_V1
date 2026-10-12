@@ -1,49 +1,49 @@
 @import "tailwindcss";
 
-/* No Broke Dayz design tokens — "trust purple + transaction green", vibrant & block-based. */
+/* No Broke Dayz design tokens — campus green, vibrant & block-based. */
 :root {
-  --primary: #7c3aed;
-  --primary-strong: #6d28d9;
+  --primary: #15803d;
+  --primary-strong: #166534;
   --on-primary: #ffffff;
-  --primary-soft: #ede9fe;
+  --primary-soft: #dcfce7;
   --accent: #16a34a;
   --accent-strong: #15803d;
   --on-accent: #052e16;
   --accent-soft: #dcfce7;
-  --background: #faf5ff;
-  --foreground: #1e1b4b;
+  --background: #f0fdf4;
+  --foreground: #052e16;
   --card: #ffffff;
   --muted: #eceef9;
   --muted-foreground: #475569;
-  --border: #ddd6fe;
+  --border: #bbf7d0;
   --warning: #b45309;
   --warning-soft: #fef3c7;
   --destructive: #dc2626;
   --destructive-soft: #fee2e2;
-  --ring: #7c3aed;
+  --ring: #16a34a;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --primary: #a78bfa;
-    --primary-strong: #c4b5fd;
-    --on-primary: #1e1b4b;
-    --primary-soft: #2e1065;
+    --primary: #4ade80;
+    --primary-strong: #86efac;
+    --on-primary: #052e16;
+    --primary-soft: #052e16;
     --accent: #4ade80;
     --accent-strong: #86efac;
     --on-accent: #052e16;
     --accent-soft: #052e16;
-    --background: #0f0a1f;
-    --foreground: #ede9fe;
-    --card: #1a1330;
-    --muted: #241b3d;
-    --muted-foreground: #b4b0c8;
-    --border: #3b2f63;
+    --background: #071a10;
+    --foreground: #ecfdf3;
+    --card: #102519;
+    --muted: #172f20;
+    --muted-foreground: #b2c7b7;
+    --border: #284a34;
     --warning: #fbbf24;
     --warning-soft: #3b2a05;
     --destructive: #f87171;
     --destructive-soft: #3f0d0d;
-    --ring: #c4b5fd;
+    --ring: #4ade80;
   }
 }
 

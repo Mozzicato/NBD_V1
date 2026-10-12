@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Verified campus micro-jobs with escrow-protected pay.",
     start_url: "/jobs",
     display: "standalone",
-    background_color: "#faf5ff",
-    theme_color: "#7c3aed",
+    background_color: "#f0fdf4",
+    theme_color: "#15803d",
     icons: [
       { src: "/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
       { src: "/icon-maskable.svg", sizes: "any", type: "image/svg+xml", purpose: "maskable" },
