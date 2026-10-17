@@ -7,6 +7,7 @@ import { config } from "@/lib/config";
 import { autoReleaseIfDue } from "@/lib/escrow";
 import { formatNaira } from "@/lib/money";
 import { categoryLabel, locationLabel } from "@/lib/types";
+import { AutoRefresh } from "@/components/auto-refresh";
 import { ApplyForm, DecideButtons, DisputeForm, JobActionButton, MessageForm, ReviewForm } from "@/components/job-actions";
 import { Avatar, btn, Card, EscrowBadge, formatDate, Notice, Pill, Rating, StatusBadge, timeAgo, VerifiedBadge } from "@/components/ui";
 
@@ -66,6 +67,7 @@ export default async function JobPage({ params, searchParams }: PageProps<"/jobs
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+      {(isParty || myApp) && !["completed", "cancelled"].includes(job.status) && <AutoRefresh />}
       <div className="space-y-6">
         {sp.funded && <Notice tone="accent"><strong>Payment received.</strong> Your job is live and {formatNaira(workerPool + job.commission)} is held in escrow.</Notice>}
         {sp.pending && <Notice tone="warning">We&apos;re still waiting for the payment provider to confirm your payment. Refresh in a minute.</Notice>}
@@ -134,8 +136,9 @@ export default async function JobPage({ params, searchParams }: PageProps<"/jobs
               {job.messages.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Agree on where and when. Keep payment on No Broke Dayz so you stay protected.</p>
               ) : (
-                <ul className="max-h-80 space-y-3 overflow-y-auto">
-                  {job.messages.map((m) => (
+                // Reversed column keeps the newest message in view without client-side scrolling.
+                <ul className="flex max-h-80 flex-col-reverse gap-3 overflow-y-auto">
+                  {[...job.messages].reverse().map((m) => (
                     <li key={m.id} className={`flex gap-2 ${m.senderId === user?.id ? "flex-row-reverse text-right" : ""}`}>
                       <Avatar name={m.sender.name} url={m.sender.photoUrl} size={28} />
                       <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${m.senderId === user?.id ? "bg-primary text-on-primary" : "bg-muted"}`}>

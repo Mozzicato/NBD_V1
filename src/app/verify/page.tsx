@@ -3,7 +3,7 @@ import { BadgeCheck, Clock, IdCard, Mail } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { config } from "@/lib/config";
 import { db } from "@/lib/db";
-import { confirmSchoolCode, sendSchoolCode, submitIdCard } from "@/app/actions/verify";
+import { confirmSchoolCode, demoVerify, sendSchoolCode, submitIdCard } from "@/app/actions/verify";
 import { ActionForm, Field, SubmitButton } from "@/components/form";
 import { btn, Card, Notice } from "@/components/ui";
 
@@ -42,6 +42,16 @@ export default async function VerifyPage({ searchParams }: PageProps<"/verify">)
           Every worker and poster is a verified student. That&apos;s what keeps the marketplace trustworthy. You&apos;ll need this before you can apply for or post jobs.
         </p>
       </div>
+
+      {config.demoMode && (
+        <Card className="border-2 border-warning/40">
+          <h2 className="font-bold">Demo mode</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Student verification is switched off for this demo. Continue to start posting and applying for jobs.</p>
+          <form action={demoVerify} className="mt-4">
+            <SubmitButton variant="accent" className="w-full">Continue without verification</SubmitButton>
+          </form>
+        </Card>
+      )}
 
       {user.verificationStatus === "pending" && (
         <Notice tone="warning">

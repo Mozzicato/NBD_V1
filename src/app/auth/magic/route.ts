@@ -4,6 +4,7 @@ import { consumeMagicToken } from "@/lib/otp";
 import { createSession, safeNext } from "@/lib/auth";
 import { track } from "@/lib/notify";
 import { grantDemoStartingBalance } from "@/lib/demo-wallet";
+import { config } from "@/lib/config";
 
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get("token") ?? "";
@@ -14,7 +15,7 @@ export async function GET(req: NextRequest) {
   if (!user) {
     // Consent was captured on the form that requested the link.
     user = await db.user.create({
-      data: { email: otp.target, name: otp.target.split("@")[0], consentAt: new Date() },
+      data: { email: otp.target, name: otp.target.split("@")[0], consentAt: new Date(), ...(config.demoMode && { verificationStatus: "verified" }) },
     });
     await grantDemoStartingBalance(user.id);
     await track("signup", user.id, { method: "magic_link" });

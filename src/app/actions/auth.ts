@@ -26,12 +26,13 @@ export async function signup(_: ActionState, form: FormData): Promise<ActionStat
   if (await db.user.findUnique({ where: { email } })) return fail("An account with this email already exists. Try logging in.");
 
   const user = await db.user.create({
-    data: { name, email, passwordHash: await hashPassword(password), consentAt: new Date() },
+    // Demo mode lets community members join with any email, so skip student verification.
+    data: { name, email, passwordHash: await hashPassword(password), consentAt: new Date(), ...(config.demoMode && { verificationStatus: "verified" }) },
   });
   await grantDemoStartingBalance(user.id);
   await track("signup", user.id, { method: "password" });
   await createSession(user.id);
-  redirect("/verify");
+  redirect(config.demoMode ? "/profile/edit?welcome=1" : "/verify");
 }
 
 export async function login(_: ActionState, form: FormData): Promise<ActionState> {

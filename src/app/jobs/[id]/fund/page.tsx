@@ -21,7 +21,7 @@ export default async function FundJobPage({ params, searchParams }: PageProps<"/
 
   const workerPool = job.amount * job.slots;
   const total = workerPool + job.commission;
-  const isMock = !config.paystackSecretKey;
+  const isMock = config.demoMode || !config.paystackSecretKey;
 
   return (
     <div className="mx-auto max-w-lg">
@@ -52,7 +52,7 @@ export default async function FundJobPage({ params, searchParams }: PageProps<"/
           <input type="hidden" name="jobId" value={job.id} />
           <SubmitButton variant="accent" className="w-full text-base">Pay {formatNaira(total)}</SubmitButton>
         </form>
-        {isMock && <p className="text-center text-xs text-muted-foreground">Test mode: no real money moves.</p>}
+        {isMock && <Notice tone="warning"><strong>Simulated payment.</strong> This is a demo: no real money is charged, held or paid out.</Notice>}
       </Card>
       <p className="mt-4 text-center text-sm">
         <Link href={`/jobs/${job.id}`} className="font-semibold text-primary underline">Save as draft and pay later</Link>

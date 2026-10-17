@@ -81,3 +81,15 @@ export async function submitIdCard(_: ActionState, form: FormData): Promise<Acti
   revalidatePath("/verify");
   return { ok: "Thanks! Your ID is in the review queue. We'll email you once it's checked, usually within a day." };
 }
+
+/** Demo mode only: let accounts created with any email skip student verification. */
+export async function demoVerify() {
+  const user = await requireUser("/verify");
+  if (!config.demoMode) redirect("/verify");
+  if (user.verificationStatus !== "verified") {
+    await db.user.update({ where: { id: user.id }, data: { verificationStatus: "verified" } });
+    await track("verification_completed", user.id, { method: "demo" });
+  }
+  revalidatePath("/", "layout");
+  redirect("/profile/edit?welcome=1");
+}

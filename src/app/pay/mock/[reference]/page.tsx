@@ -39,7 +39,7 @@ export default async function MockCheckout({ params }: PageProps<"/pay/mock/[ref
           <p className="mt-1 text-3xl font-extrabold">{formatNaira(payment.amount)}</p>
           <p className="mt-1 text-sm text-muted-foreground">{payment.job.title}</p>
         </div>
-        <p className="text-sm text-muted-foreground">This replaces the payment provider in development. Pick an outcome to simulate.</p>
+        <p className="text-sm text-muted-foreground">Demo checkout: no real money moves. Pick an outcome to simulate.</p>
         <form action={choose} className="space-y-2">
           <input type="hidden" name="reference" value={reference} />
           <SubmitButton variant="accent" className="w-full" name="outcome" value="success">Simulate successful payment</SubmitButton>
